@@ -3,9 +3,8 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        DOCKERHUB_USER  = 'antben'
-        DEV_REPO        = 'antben/devops-build-dev'
-        PROD_REPO       = 'antben/devops-build-prod'
+        DEV_REPO        = 'antben1204/devops-build-dev'
+        PROD_REPO       = 'antben1204/devops-build-prod'
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
     }
 
