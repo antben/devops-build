@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+# =========================
+# CONFIGURATION
+# =========================
+IMAGE_NAME="yourdockerhubusername/devops-build"
+IMAGE_TAG="v1"
+FULL_IMAGE_NAME="${IMAGE_NAME}:${IMAGE_TAG}"
+
+# =========================
+# BUILD IMAGE
+# =========================
+echo "Building Docker image: ${FULL_IMAGE_NAME}"
+docker build -t "${FULL_IMAGE_NAME}" .
+
+echo "Docker image built successfully: ${FULL_IMAGE_NAME}"
+
+# =========================
+# OPTIONAL: PUSH IMAGE
+# =========================
+read -p "Do you want to push the image to registry? (y/n): " PUSH_IMAGE
+
+if [[ "$PUSH_IMAGE" == "y" || "$PUSH_IMAGE" == "Y" ]]; then
+    echo "Pushing image to registry..."
+    docker push "${FULL_IMAGE_NAME}"
+    echo "Image pushed successfully: ${FULL_IMAGE_NAME}"
+else
+    echo "Skipping image push."
+fi
