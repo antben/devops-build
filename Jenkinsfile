@@ -6,6 +6,9 @@ pipeline {
         DEV_REPO        = 'antben1204/devops-build-dev'
         PROD_REPO       = 'antben1204/devops-build-prod'
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
+        APP_HOST        = '3.7.66.199'
+        APP_USER        = 'ubuntu'
+        CONTAINER_NAME  = 'devops-build-app'
     }
 
     stages {
@@ -73,6 +76,25 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to App EC2') {
+            when {
+                branch 'prod'
+            }
+            steps {
+                sshagent(credentials: ['app-server-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${APP_USER}@${APP_HOST} "
+                            docker login -u ${DOCKERHUB_CREDS_USR} -p ${DOCKERHUB_CREDS_PSW} &&
+                            docker pull ${PROD_REPO}:latest &&
+                            docker stop ${CONTAINER_NAME} || true &&
+                            docker rm ${CONTAINER_NAME} || true &&
+                            docker run -d --name ${CONTAINER_NAME} -p 80:80 ${PROD_REPO}:latest
+                        "
+                    '''
+                }
+            }
+        }
     }
 
     post {
@@ -81,10 +103,10 @@ pipeline {
             sh 'docker image prune -f || true'
         }
         success {
-            echo "Build and push completed for branch ${BRANCH_NAME}"
+            echo "Build, push, and optional deploy completed for branch ${BRANCH_NAME}"
         }
         failure {
-            echo "Build failed on branch ${BRANCH_NAME}"
+            echo "Pipeline failed on branch ${BRANCH_NAME}"
         }
     }
 }
